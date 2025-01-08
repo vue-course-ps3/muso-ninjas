@@ -60,7 +60,6 @@ export default {
   }
 }
 </script>
-
 <style>
 .playlist-details {
   display: grid;
