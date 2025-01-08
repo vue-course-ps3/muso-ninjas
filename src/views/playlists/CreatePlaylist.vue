@@ -9,26 +9,46 @@
       <input type="file" @change="handleChange">
       <div class="error">{{ fileError }}</div> -->
 
-      <button>Create</button>
+      <button v-if="!isPending">Create</button>
+      <button v-else disabled>Saving...</button>
     </form>
   </div>
 </template>
 
 <script>
 import { ref } from 'vue'
-
+import useCollection from '@/composables/useCollection';
+import getUser from '@/composables/getUser';
+import { timestamp } from '@/firebase/config';
 export default {
   setup() {
     const title = ref('')
     const description = ref('')
-    const file = ref(null)
-    const fileError = ref(null)
+    const {error, addDoc} = useCollection('playlists')
+    const {user} = getUser()
+    const isPending = ref(false)
 
-    const handleSubmit = () => {
-      if (file.value) {
-        console.log(title.value, description.value, file.value)
+    const handleSubmit = async () => {
+        isPending.value = true
+        await addDoc({ 
+          title: title.value, 
+          description: description.value, 
+          userId: user.value.uid, 
+          userName: user.value.displayName, 
+          songs: [],
+          createdAt: timestamp(), 
+          })
+          
+          if (!error.value) {
+            title.value = ''
+            description.value = ''
+            console.log('playlist created')
+          }
+          isPending.value = false
+
       }
-    }
+    
+      return { title, description, handleSubmit, isPending }
 
     // allowed file types
     // const types = ['image/png', 'image/jpeg']
@@ -46,7 +66,6 @@ export default {
     //   }
     //}
     
-    return { title, description, handleSubmit, fileError }
   }
 }
 </script>
