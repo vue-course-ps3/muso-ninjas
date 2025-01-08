@@ -5,7 +5,8 @@
       <h4>Add a new song</h4>
       <input type="text" placeholder="Song title" required v-model="title"/>
       <input type="text" placeholder="Artist" required v-model="artist"/>
-      <button>Add</button>
+      <button v-if="!isPending">Add</button>
+      <button v-if="isPending">Saving</button>
     </form>
   </div>
 </template>
@@ -16,11 +17,11 @@ import { ref } from 'vue';
 
 export default {
   props: ['playlist'],
-  setup(){
+  setup(props){
     const title = ref('');
     const artist = ref('');
     const showForm = ref(false);
-    const {updateDoc} = useDocument('playlists', 'playlistId');
+    const {updateDoc, isPending} = useDocument('playlists', props.playlist.id);
     const handleSubmit = async () => {
       const newSong ={
         title: title.value,
@@ -28,13 +29,13 @@ export default {
         id: Math.floor(Math.random() * 1000000)
       }
       const res = await updateDoc({
-        songs: [...props.playlist.id, newSong]
+        songs: [...props.playlist.songs, newSong]
       })
       title.value = '';
       artist.value = '';
     }
 
-    return { title, artist, showForm, handleSubmit }
+    return { title, artist, showForm, handleSubmit, isPending }
   }
 }
 </script>
