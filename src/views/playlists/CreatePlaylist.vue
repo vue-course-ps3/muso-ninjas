@@ -20,6 +20,7 @@ import { ref } from 'vue'
 import useCollection from '@/composables/useCollection';
 import getUser from '@/composables/getUser';
 import { timestamp } from '@/firebase/config';
+import { useRouter } from 'vue-router';
 export default {
   setup() {
     const title = ref('')
@@ -27,10 +28,11 @@ export default {
     const {error, addDoc} = useCollection('playlists')
     const {user} = getUser()
     const isPending = ref(false)
+    const router = useRouter()
 
     const handleSubmit = async () => {
         isPending.value = true
-        await addDoc({ 
+        const res = await addDoc({ 
           title: title.value, 
           description: description.value, 
           userId: user.value.uid, 
@@ -40,9 +42,7 @@ export default {
           })
           
           if (!error.value) {
-            title.value = ''
-            description.value = ''
-            console.log('playlist created')
+            router.push({name: 'PlaylistDetails', params: {id: res.id}})
           }
           isPending.value = false
 
